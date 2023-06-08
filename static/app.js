@@ -20,6 +20,7 @@ class Chatbox{
         node.addEventListener("keyup",({key})=>{
             if(key==='Enter') {
                 this.onSendButton(chatBox);
+                node.value = "";  //Clearing text box here after hitting enter
             }
         })
     }
@@ -43,6 +44,8 @@ class Chatbox{
       }
       let msg1 = { name: "User", message: text1 };
       this.message.push(msg1);
+      this.updateChatText(chatBox);
+      textField.value = "";  //Clearing text box here after sending message
 
       // 'http://127.0.0.1:5000/response'
       fetch($SCRIPT_ROOT + "/response", {
@@ -55,8 +58,12 @@ class Chatbox{
       })
         .then((r) => r.json())
         .then((r) => {
-          let msg2 = { name: "Sam", message: r.answer };
+          let msg2 = { name: "Sam", message: '<img src="images/loader.gif" alt="Loading..." />' };
           this.message.push(msg2);
+          this.updateChatText(chatBox);
+
+          let msg3 = { name: "Sam", message: r.answer };
+          this.message.push(msg3);
           this.updateChatText(chatBox);
           textField.value = "";
         })
