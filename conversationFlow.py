@@ -1,22 +1,44 @@
-def conversation(classification):    
+import requests
+import json
+
+from LLMRequests import greetingResponse
+from database import resetMessages, storeMessage
+
+def conversation(classification,inputText):    
     if classification["class"] == "greeting":
-        return greeting(classification["class"])
+        return greeting(inputText)
     elif classification["class"] == "notCharging":
-        return vehicleChargingStatus(classification["class"])
+        return vehicleChargingStatus(inputText)
     elif classification["class"] == "chargeCompletionTime":
-        return vehicleChargeCompletionTime(classification["class"])
+        return vehicleChargeCompletionTime(inputText)
     else:
-        return newQuery(classification["class"])
+        return newQuery(inputText)
 
 def greeting(input):
-    return input
+    response=greetingResponse(input)
+    return response
 
 def vehicleChargingStatus(input):
     return input
 
 def vehicleChargeCompletionTime(input):
-    return input
+    response="Kindly provide the vehicle ID"
+    storeMessage(input,response)
+    return response
 
 def newQuery(input):
-    return input
+    url = 'http://127.0.0.1:5000/chatbot/ask-ava'  # Replace with your Flask endpoint URL
+
+    # JSON payload
+    payload = {
+        "question": input
+    }
+
+    response = requests.post(url, json=payload)
+    
+    if response:
+        data = response.json()["answer"]
+    else:
+        print('Request failed with status code', response.status_code)
+    return data
 
