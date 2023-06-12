@@ -20,6 +20,7 @@ def response():
     inputText = request.get_json().get("message")
     # TODO Check if text is valid(empty)
     
+    print("Request",request.get_json())
     continued = False
 
     # Check for continued conversation
@@ -43,15 +44,14 @@ def fetch_audio():
     return 'File uploaded and saved.', 200
 
 @app.get("/processAudio")
-def get_audio():
-    print("Processing audio############################")
+def getAudio():
     # Get saved audio
     audioInput = open("audioFiles/recordedAudio.webm", "rb")
 
     # Decoded message
     message_decoded = convertAudioToText(audioInput)
-    print("Decoded message",message_decoded)
-    return message_decoded
+    result={"message":message_decoded,"status": 200}
+    return jsonify(result)
     
     ############################################################################################################
     # # Guard: Ensure message decoded 

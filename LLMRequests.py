@@ -48,7 +48,8 @@ def getResponseFromMessages(messages, model="gpt-3.5-turbo", temperature=0):
 # Convert audio-to-text
 def convertAudioToText(audioFile):
     try:
-        transcript = openai.Audio.transcribe("whisper-1", file=audioFile) 
+        
+        transcript = openai.Audio.transcribe("whisper-1", file=audioFile,language="en") 
         messageText = transcript['text']
         return messageText
     except Exception as e:

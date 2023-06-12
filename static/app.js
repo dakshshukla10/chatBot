@@ -54,6 +54,9 @@ class Chatbox{
 
     stopRecording() {
         this.mediaRecorder.stop();
+        // To use the 'this' reference in the callback function
+        const that = this;  // Save the 'this' reference
+        this.mediaRecorder.stop();
 
         this.mediaRecorder.addEventListener("stop", () => {
             const audioBlob = new Blob(this.audioChunks);
@@ -67,19 +70,33 @@ class Chatbox{
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                console.log('Audio data sent successfully');
-            }).catch(error => console.error(error));
-        });
+                console.log('Audio data sent successfully',response);
+            }).catch(error => console.error(error))
+            .then(() => {
+            return fetch('http://127.0.0.1:8080/processAudio');
+                })
+                .then(response => {
+                    console.log("First Response point",response)
+                    if (response.status!=200) {
+                        throw new Error('Network response was not ok');
+                    }
+                    console.log('Audio data processed successfully',response);
+                    return response.json(); 
+                }).catch(error => console.error(error))
+                .then(inputMessage => {console.log(inputMessage['message']);
+                    that.onSendAudio(inputMessage, that.args.chatBox)})
+            }    
+        );
         
-        fetch('http://127.0.0.1:8080/processAudio')
-            .then(response => {
-                if (!response.ok) {
-                throw new Error('Network response was not ok');
-                }
-                console.log('Audio data sent successfully');
-            })
-            .catch(error => console.error(error));
-        
+        // fetch('http://127.0.0.1:8080/processAudio')
+        //     .then(response => {
+        //         if (!response.ok) {
+        //         throw new Error('Network response was not ok');
+        //         }
+        //         console.log('Audio data sent successfully');
+        //     })
+        //     .catch(error => console.error(error));
+
         this.args.recordButton.textContent = 'Start';
 
     }
@@ -129,6 +146,37 @@ class Chatbox{
           console.log("Error:", error);
           this.updateChatText(chatBox);
           textField.value = "";
+        });
+    }
+
+    onSendAudio(inputMessage, chatBox){
+      console.log("This has been reached",inputMessage)  
+      let text1 = inputMessage["message"];
+      
+      if (text1 === "") {
+        return;
+      }
+      let msg1 = { name: "User", message: text1 };
+      this.message.push(msg1);
+
+      // 'http://127.0.0.1:5000/response'
+      fetch($SCRIPT_ROOT + "/response", {
+        method: "POST",
+        body: JSON.stringify({ message: text1 }),
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((r) => r.json())
+        .then((r) => {
+          let msg3 = { name: "Sam", message: r.answer };
+          this.message.push(msg3);
+          this.updateChatText(chatBox);
+        })
+        .catch((error) => {
+          console.log("Error:", error);
+          this.updateChatText(chatBox);
         });
     }
 
