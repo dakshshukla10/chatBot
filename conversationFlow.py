@@ -41,4 +41,3 @@ def newQuery(input):
     else:
         print('Request failed with status code', response.status_code)
     return data
-

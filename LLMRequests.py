@@ -4,6 +4,13 @@ from dotenv import load_dotenv, find_dotenv
 import json
 _ = load_dotenv(find_dotenv())
 
+# Custom Function import
+from database import getRecentMessage
+
+# Retrieve API key from .env file
+openai.api_key = os.environ['OPENAI_API_KEY']
+openai.organization = os.environ['OPEN_AI_ORG']
+
 def getResponse(messages,model="gpt-3.5-turbo",temperature=0,max_tokens=500):
     response = openai.ChatCompletion.create(model=model,messages=messages,temperature=temperature,max_tokens=max_tokens,)
     return response.choices[0].message["content"]
@@ -36,3 +43,14 @@ def getResponseFromMessages(messages, model="gpt-3.5-turbo", temperature=0):
         temperature=temperature, 
     )
     return response.choices[0].message["content"]
+
+# OpenAI - Wisper 
+# Convert audio-to-text
+def convertAudioToText(audioFile):
+    try:
+        transcript = openai.Audio.transcribe("whisper-1", file=audioFile) 
+        messageText = transcript['text']
+        return messageText
+    except Exception as e:
+        print("Error in audio-to-text conversion",e)
+        return None

@@ -1,20 +1,32 @@
+
 class Chatbox{
     constructor(){
         this.args={
             openButton: document.querySelector('.chatbox__button'),
             chatBox: document.querySelector('.chatbox__support'),
             sendButton: document.querySelector('.send__button'),
+            recordButton: document.getElementById('recordButton')
         }
         this.state=false;
         this.message=[];
+        this.mediaRecorder = null;
+        this.audioChunks = [];
     }
     
     display(){
-        const {openButton,chatBox,sendButton}=this.args;
+        const {openButton,chatBox,sendButton,recordButton}=this.args;
 
         openButton.addEventListener('click',()=>this.toggleState(chatBox));
 
         sendButton.addEventListener('click',()=>this.onSendButton(chatBox));
+
+        recordButton.addEventListener('click', () => {
+            if (recordButton.textContent === 'Start') {
+                this.startRecording();
+            } else {
+                this.stopRecording();
+            }
+        });
 
         const node=chatBox.querySelector('input');
         node.addEventListener("keyup",({key})=>{
@@ -23,6 +35,53 @@ class Chatbox{
                 node.value = "";  //Clearing text box here after hitting enter
             }
         })
+    }
+
+    startRecording() {
+        this.audioChunks = [];
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                this.mediaRecorder = new MediaRecorder(stream);
+                this.mediaRecorder.start();
+                
+                this.mediaRecorder.addEventListener("dataavailable", event => {
+                    this.audioChunks.push(event.data);
+                });
+                
+                this.args.recordButton.textContent = 'Stop';
+            }).catch(error => console.error(error));
+    }
+
+    stopRecording() {
+        this.mediaRecorder.stop();
+
+        this.mediaRecorder.addEventListener("stop", () => {
+            const audioBlob = new Blob(this.audioChunks);
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recordedAudio.webm');
+            
+            fetch('http://127.0.0.1:8080/fetchAudio', {
+                method: 'POST',
+                body: formData
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                console.log('Audio data sent successfully');
+            }).catch(error => console.error(error));
+        });
+        
+        fetch('http://127.0.0.1:8080/processAudio')
+            .then(response => {
+                if (!response.ok) {
+                throw new Error('Network response was not ok');
+                }
+                console.log('Audio data sent successfully');
+            })
+            .catch(error => console.error(error));
+        
+        this.args.recordButton.textContent = 'Start';
+
     }
 
     toggleState(chatBox){
@@ -87,7 +146,7 @@ class Chatbox{
             chatmessage.innerHTML=html;
         })
     }
-
 }
+
 const chatbox=new Chatbox();
 chatbox.display();
