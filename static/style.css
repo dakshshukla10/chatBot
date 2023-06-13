@@ -158,7 +158,19 @@ body {
     background: var(--primary);
     color: white;
 }
-
+#recordButton {
+    opacity: 0;
+    background-color: transparent;
+    border: none;
+    color: transparent;
+    position: absolute;
+    width: 30px; /* Adjust the width and height as needed */
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    outline: none;
+    padding: 0;
+  }
 /* FOOTER */
 .chatbox__footer {
     display: flex;
@@ -228,3 +240,56 @@ body {
     align-items: center;
   }
   
+  /* Mic Icon */
+
+  .icon-wrapper {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgb(0, 221, 255);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+  
+  .mic-icon {
+    fill: white;
+    width: 17px;
+    height: 17px;
+    outline: none;
+    padding: 0;
+  }
+  
+  .pulse-circle,
+  .pulse-circle-out {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(8, 211, 234, 0.6);
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 1s ease-out;
+  }
+  
+  .pulse-circle {
+    animation: pulse 1s infinite; /* Faster inner pulse */
+  }
+  
+  .pulse-circle-out {
+    animation: pulse 2s infinite; /* Slower outer pulse */
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }

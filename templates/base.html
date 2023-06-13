@@ -24,7 +24,12 @@
             </div>
             <div class="chatbox__footer">
                 <input type="text" placeholder="Write a message...">
-                <button id="recordButton">Start</button>
+                <div class="icon-wrapper" onclick="pulse()">
+                    <div class="pulse-circle"></div>
+                    <div class="pulse-circle-out"></div>
+                    <img class="mic-icon" src="{{ url_for('static', filename='images/icons8-microphone-24.png') }}" alt="mic icon">
+                    <button id="recordButton">Start</button>
+                </div>
                 <button class="chatbox__send--footer send__button">Send</button>
             </div>
         </div>
