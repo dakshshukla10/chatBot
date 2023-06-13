@@ -1,5 +1,5 @@
 from http.client import HTTPException
-from flask import Flask, render_template, request,jsonify
+from flask import Flask, render_template, request,jsonify,Response,stream_with_context
 import os
 import requests
 from LLMRequests import convertAudioToText
@@ -7,7 +7,8 @@ from LLMRequests import convertAudioToText
 # Internal imports
 from classifier import inputClassifier
 from continueConversation import findContinuedConversation
-from conversationFlow import conversation 
+from conversationFlow import conversation
+from textToSpeach import convertTextToSpeech 
 
 app=Flask(__name__)
 
@@ -31,9 +32,8 @@ def response():
         classifiedInput = inputClassifier(inputText)
 
         response = conversation(classifiedInput,inputText)
-        print("Returned",response)
 
-    
+    audio=convertTextToSpeech(response)
     message = {"answer":response}
     return jsonify(message)
 
@@ -52,44 +52,18 @@ def getAudio():
     message_decoded = convertAudioToText(audioInput)
     result={"message":message_decoded,"status": 200}
     return jsonify(result)
-    
-    ############################################################################################################
-    # # Guard: Ensure message decoded 
-    # if not message_decoded:
-    #     raise HTTPException(status_code=404, detail="Failed to decod audio")
-    
-    # # Get ChatGPT response)
-    # url = 'http://127.0.0.1:8080/response'  # Replace with your Flask endpoint URL
 
-    
-    # # JSON payload
-    # payload = message_decoded
+@app.route('/textToSpeach', methods=['POST'])
+def textToSpeach():
+    inputText = request.get_json().get("message")  
+    audioOutput=convertTextToSpeech(inputText)
 
-    # chatResponse = requests.post(url, json=payload)
+    # Create a generator that yields chunks of data
+    def generate_audio():
+        yield audioOutput    
 
-    # # Guard: Ensure received chat response
-    # if not chatResponse:
-    #     raise HTTPException(status_code=404, detail="Failed to get chat response")
-
-    # return chatResponse
-    ############################################################################################################
-
-
-    # # Store messages 
-    # store_message(message_decoded,chat_response)
-
-    # # Convert text to speech
-    # audio_output = convert_text_to_speech(chat_response)
-
-    # # Guard: Ensure got audio back 
-    # if not chat_response:
-    #     raise HTTPException(status_code=404, detail="Failed to get Eleven Labs audio response")
-
-    # # Create a generator yield chunk of data 
-    # def iterfile():
-    #     yield audio_output
-
-    # return StreamingResponse(iterfile(), media_type="audio/mpeg")
+    # Use for POST: Return output audio
+    return Response(stream_with_context(generate_audio()), mimetype="application/octet-stream")
 
 
 
